@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block content %}
+<div class="page-header">
+    <h1>My Digital Assets</h1>
+</div>
+
+<div class="gallery">
+    {% for asset in assets %}
+    <div class="asset-card">
+        <div class="asset-card-image">
+            <img
+                src="{{ url_for('static', filename='uploads/' + asset.featured_image) }}"
+                alt="{{ asset.title }}"
+                loading="lazy"
+            />
+        </div>
+        <div class="asset-card-content">
+            <h3>{{ asset.title }}</h3>
+            <div class="asset-card-actions">
+                <a
+                    href="{{ url_for('asset_detail', id=asset.id) }}"
+                    class="button button-primary"
+                >
+                    <i class="fas fa-eye"></i> View Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-box-open"></i>
+        <h2>No assets yet</h2>
+        <p>Start by adding your first digital asset!</p>
+        <a href="{{ url_for('add_asset') }}" class="button button-primary">
+            <i class="fas fa-plus"></i> Add Asset
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+Flask
+Flask-SQLAlchemy
+flask-migrate>=4.0.4
+Flask-WTF
+Pillow
+bleach
+gunicorn

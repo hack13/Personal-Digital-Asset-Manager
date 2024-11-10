@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Digital Assets Manager - Organize and manage your digital assets"
+        />
+        <title>Digital Assets Manager</title>
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/style.css') }}"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css"
+            integrity="sha512-Fm8kRNVGCBZn0sPmwJbVXlqfJmPC13zRsMElZenX6v721g/H7OukJd8XzDEBRQ2FSATK8xNF9UYvzsCtUpfeJg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+        <nav class="main-nav">
+            <div class="nav-container">
+                <div class="nav-brand">Digital Assets Manager</div>
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}" class="nav-link"
+                        ><i class="fas fa-home"></i> Home</a
+                    >
+                    <a href="{{ url_for('add_asset') }}" class="nav-link"
+                        ><i class="fas fa-plus"></i> Add Asset</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %} {%
+            if messages %} {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+                <button class="alert-close">&times;</button>
+            </div>
+            {% endfor %} {% endif %} {% endwith %} {% block content %}{%
+            endblock %}
+        </main>
+
+        {% block scripts %}{% endblock %}
+        <script>
+            // Close alert messages
+            document.addEventListener("DOMContentLoaded", function () {
+                document.querySelectorAll(".alert-close").forEach((button) => {
+                    button.addEventListener("click", () => {
+                        button.parentElement.style.display = "none";
+                    });
+                });
+            });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    </body>
+</html>
