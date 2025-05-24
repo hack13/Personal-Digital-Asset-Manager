@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: docker
-    container: ubuntu:latest
+    container: node:22-alpine
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,6 +26,9 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Container Registry
         if: github.event_name != 'pull_request'
