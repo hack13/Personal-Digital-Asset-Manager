@@ -27,7 +27,6 @@ app = create_app()
 storage = StorageBackend(app.config['STORAGE_URL'])
 
 def generate_unique_filename(original_filename):
-    """Generate a unique filename while preserving the original extension"""
     # Get the file extension
     ext = os.path.splitext(original_filename)[1] if '.' in original_filename else ''
     # Generate a unique filename using UUID

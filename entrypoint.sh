@@ -17,7 +17,7 @@ check_required_vars() {
 # Check required environment variables (add your required variables here)
 check_required_vars "FLASK_APP" "FLASK_ENV" "STORAGE_URL"
 
-# Wait for database to be ready (if using PostgreSQL)
+# Wait for database to be ready (for future use)
 # until PGPASSWORD=$DATABASE_PASSWORD psql -h "$DATABASE_HOST" -U "$DATABASE_USER" -d "$DATABASE_NAME" -c '\q'; do
 #   echo "Waiting for database..."
 #   sleep 1
