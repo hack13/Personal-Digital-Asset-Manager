@@ -1,0 +1,21 @@
+# Required Variables for CI/CD Pipeline
+
+# Variables (set in Forgejo repository settings under Variables)
+variables:
+  FORGEJO_REGISTRY:
+    description: "Your Forgejo registry URL (e.g., forgejo.yourdomain.com)"
+    required: true
+  
+  FORGEJO_OWNER:
+    description: "Your Forgejo username or organization name"
+    required: true
+  
+  FORGEJO_USER:
+    description: "Username for registry authentication"
+    required: true
+
+# Secrets (set in Forgejo repository settings under Secrets)
+secrets:
+  FORGEJO_TOKEN:
+    description: "Access token for Forgejo registry authentication"
+    required: true 
