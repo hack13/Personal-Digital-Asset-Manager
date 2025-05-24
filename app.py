@@ -6,6 +6,9 @@ from config import Config
 from flask_migrate import Migrate
 from extensions import db, migrate
 from models import Asset, AssetFile
+from storage import StorageBackend
+from image_processor import ImageProcessor
+from werkzeug.datastructures import FileStorage
 
 def create_app():
     app = Flask(__name__)
@@ -14,20 +17,14 @@ def create_app():
     # Ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
 
-    # Ensure the uploads folder exists
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Initialize database
-    #with app.app_context():
-    #    db.create_all()
-
     return app
 
 app = create_app()
+storage = StorageBackend(app.config['STORAGE_URL'])
 
 def generate_unique_filename(original_filename):
     """Generate a unique filename while preserving the original extension"""
@@ -36,15 +33,12 @@ def generate_unique_filename(original_filename):
     # Generate a unique filename using UUID
     return f"{uuid.uuid4().hex}{ext}"
 
-def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'zip', 'spp', 'unitypackage', 'fbx', 'blend', 'webp'}
+def allowed_file(filename, is_featured_image=False):
+    if is_featured_image:
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    else:
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'zip', 'spp', 'unitypackage', 'fbx', 'blend', 'webp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def delete_file(filename):
-    if filename:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        if os.path.exists(file_path):
-            os.remove(file_path)
 
 @app.route('/')
 def index():
@@ -60,13 +54,23 @@ def add_asset():
         featured_image = request.files.get('featured_image')
         additional_files = request.files.getlist('additional_files')
 
-        if title and featured_image and allowed_file(featured_image.filename):
+        if title and featured_image and allowed_file(featured_image.filename, is_featured_image=True):
+            # Process and convert featured image to WebP
+            processed_image, ext = ImageProcessor.process_featured_image(featured_image)
+            
             # Generate unique filename for featured image
             original_featured_filename = secure_filename(featured_image.filename)
-            unique_featured_filename = generate_unique_filename(original_featured_filename)
+            unique_featured_filename = f"{uuid.uuid4().hex}{ext}"
 
-            # Save featured image with unique filename
-            featured_image.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_featured_filename))
+            # Create a FileStorage object from the processed image
+            processed_file = FileStorage(
+                stream=processed_image,
+                filename=unique_featured_filename,
+                content_type='image/webp'
+            )
+
+            # Save featured image with unique filename using storage backend
+            storage.save(processed_file, unique_featured_filename)
 
             # Create asset with unique filename
             asset = Asset(
@@ -84,7 +88,7 @@ def add_asset():
                 if file and allowed_file(file.filename):
                     original_filename = secure_filename(file.filename)
                     unique_filename = generate_unique_filename(original_filename)
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+                    storage.save(file, unique_filename)
                     asset_file = AssetFile(
                         filename=unique_filename,
                         original_filename=original_filename,
@@ -115,16 +119,29 @@ def edit_asset(id):
 
         # Handle featured image update
         featured_image = request.files.get('featured_image')
-        if featured_image and featured_image.filename and allowed_file(featured_image.filename):
+        if featured_image and featured_image.filename and allowed_file(featured_image.filename, is_featured_image=True):
             # Delete old featured image
-            delete_file(asset.featured_image)
+            if asset.featured_image:
+                storage.delete(asset.featured_image)
 
-            # Save new featured image
+            # Process and convert featured image to WebP
+            processed_image, ext = ImageProcessor.process_featured_image(featured_image)
+            
+            # Generate unique filename
             original_featured_filename = secure_filename(featured_image.filename)
-            unique_featured_filename = generate_unique_filename(original_featured_filename)
-            # Save featured image with unique filename
-            featured_image.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_featured_filename))
+            unique_featured_filename = f"{uuid.uuid4().hex}{ext}"
+
+            # Create a FileStorage object from the processed image
+            processed_file = FileStorage(
+                stream=processed_image,
+                filename=unique_featured_filename,
+                content_type='image/webp'
+            )
+
+            # Save the processed image
+            storage.save(processed_file, unique_featured_filename)
             asset.featured_image = unique_featured_filename
+            asset.original_featured_image = original_featured_filename
 
         # Handle additional files
         additional_files = request.files.getlist('additional_files')
@@ -132,7 +149,7 @@ def edit_asset(id):
             if file and allowed_file(file.filename):
                 original_filename = secure_filename(file.filename)
                 unique_filename = generate_unique_filename(original_filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+                storage.save(file, unique_filename)
                 asset_file = AssetFile(
                     filename=unique_filename,
                     original_filename=original_filename,
@@ -151,11 +168,12 @@ def delete_asset(id):
     asset = Asset.query.get_or_404(id)
 
     # Delete featured image
-    delete_file(asset.featured_image)
+    if asset.featured_image:
+        storage.delete(asset.featured_image)
 
     # Delete additional files
     for file in asset.files:
-        delete_file(file.filename)
+        storage.delete(file.filename)
         db.session.delete(file)
 
     db.session.delete(asset)
@@ -169,8 +187,8 @@ def delete_asset_file(id):
     asset_file = AssetFile.query.get_or_404(id)
     asset_id = asset_file.asset_id
 
-    # Delete the file
-    delete_file(asset_file.filename)
+    # Delete the file using storage backend
+    storage.delete(asset_file.filename)
 
     # Remove from database
     db.session.delete(asset_file)
@@ -180,4 +198,4 @@ def delete_asset_file(id):
     return redirect(url_for('asset_detail', id=asset_id))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5432, debug=True)

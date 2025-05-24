@@ -8,7 +8,7 @@
     <div class="asset-card">
         <div class="asset-card-image">
             <img
-                src="{{ url_for('static', filename='uploads/' + asset.featured_image) }}"
+                src="{{ asset.featured_image_url }}"
                 alt="{{ asset.title }}"
                 loading="lazy"
             />

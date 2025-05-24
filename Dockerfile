@@ -15,7 +15,19 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
+    imagemagick \
+    libmagickwand-dev \
+    libwebp-dev \
+    webp \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
+
+# Configure ImageMagick policy to allow WebP conversion with higher limits
+RUN if [ -f /etc/ImageMagick-6/policy.xml ]; then \
+    sed -i 's/<policy domain="resource" name="memory" value="256MiB"\/>/<policy domain="resource" name="memory" value="1GiB"\/>/g' /etc/ImageMagick-6/policy.xml && \
+    sed -i 's/<policy domain="resource" name="disk" value="1GiB"\/>/<policy domain="resource" name="disk" value="4GiB"\/>/g' /etc/ImageMagick-6/policy.xml && \
+    sed -i 's/<policy domain="coder" rights="none" pattern="WEBP" \/>/<policy domain="coder" rights="read|write" pattern="WEBP" \/>/g' /etc/ImageMagick-6/policy.xml; \
+    fi
 
 # Install Python dependencies
 COPY requirements.txt .

@@ -1,6 +1,7 @@
 from datetime import datetime
 from extensions import db
 import bleach
+from flask import current_app
 
 ALLOWED_TAGS = [
     'a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol',
@@ -48,9 +49,25 @@ class Asset(db.Model):
                 strip=True
             )
         return ''
+    
+    @property
+    def featured_image_url(self):
+        """Get the URL for the featured image"""
+        from storage import StorageBackend
+        if self.featured_image:
+            storage = StorageBackend(current_app.config['STORAGE_URL'])
+            return storage.url_for(self.featured_image)
+        return None
 
 class AssetFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(200), nullable=False)
     original_filename = db.Column(db.String(200))
     asset_id = db.Column(db.Integer, db.ForeignKey('asset.id'), nullable=False)
+
+    @property
+    def file_url(self):
+        """Get the URL for the file"""
+        from storage import StorageBackend
+        storage = StorageBackend(current_app.config['STORAGE_URL'])
+        return storage.url_for(self.filename)
