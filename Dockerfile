@@ -4,11 +4,17 @@ FROM python:3.9-slim
 # Set working directory
 WORKDIR /app
 
+# Set build-time arguments
+ARG FLASK_ENV=production
+ARG FLASK_APP=app.py
+ARG STORAGE_URL=file:///app/static/uploads
+
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    FLASK_APP=${FLASK_APP} \
+    FLASK_ENV=${FLASK_ENV} \
+    STORAGE_URL=${STORAGE_URL}
 
 # Install system dependencies
 RUN apt-get update \
