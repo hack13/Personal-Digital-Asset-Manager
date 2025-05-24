@@ -22,6 +22,9 @@ class Config:
     S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
     S3_PUBLIC_URL = os.environ.get('S3_PUBLIC_URL')
 
+    # Logging configuration
+    LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'DEBUG' if os.environ.get('FLASK_ENV') != 'production' else 'INFO')
+
     @staticmethod
     def init_app(app):
         # Create necessary directories
@@ -31,3 +34,7 @@ class Config:
         if app.config['STORAGE_URL'].startswith('file://'):
             storage_path = app.config['STORAGE_URL'].replace('file://', '')
             os.makedirs(storage_path, exist_ok=True)
+
+        # Configure logging
+        import logging
+        logging.basicConfig(level=getattr(logging, app.config['LOGGING_LEVEL']))

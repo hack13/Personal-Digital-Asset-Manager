@@ -4,7 +4,7 @@
 </div>
 
 <div class="form-container">
-    <form method="POST" enctype="multipart/form-data" class="form">
+    <form method="POST" enctype="multipart/form-data" class="form" id="assetForm">
         <div class="form-group">
             <label for="title" class="form-label">Title</label>
             <input
@@ -82,7 +82,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="button button-primary">
+            <button type="submit" class="button button-primary" id="submitBtn">
                 <i class="fas fa-save"></i> Save Asset
             </button>
             <a href="{{ url_for('index') }}" class="button button-secondary">
@@ -115,8 +115,11 @@
             "https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/icons.svg",
     });
 
-    // File input preview handling
     document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("assetForm");
+        const loadingOverlay = document.querySelector(".loading-overlay");
+        const loadingText = document.querySelector(".loading-text");
+
         // Featured image preview
         const featuredInput = document.getElementById("featured_image");
         const featuredPreview = document.querySelector(".file-input-preview");
@@ -151,6 +154,45 @@
                     </div>
                 `;
             });
+        });
+
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            loadingOverlay.style.display = "flex";
+            loadingText.textContent = "Processing...";
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "{{ url_for('add_asset') }}", true);
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        window.location.href = response.redirect;
+                    } else {
+                        loadingText.textContent = "Failed: " + response.error;
+                        setTimeout(() => {
+                            loadingOverlay.style.display = "none";
+                        }, 2000);
+                    }
+                } else {
+                    loadingText.textContent = "Upload failed! Please try again.";
+                    setTimeout(() => {
+                        loadingOverlay.style.display = "none";
+                    }, 2000);
+                }
+            };
+
+            xhr.onerror = function() {
+                loadingText.textContent = "Network error! Please try again.";
+                setTimeout(() => {
+                    loadingOverlay.style.display = "none";
+                }, 2000);
+            };
+
+            xhr.send(formData);
         });
     });
 </script>

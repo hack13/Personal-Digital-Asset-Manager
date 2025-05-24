@@ -61,13 +61,43 @@ class StorageBackend:
             return self.fs.open(f"{self.bucket}/{full_path}", mode)
         return self.fs.open(full_path, mode)
 
-    def delete(self, filename: str) -> None:
-        """Delete a file from storage"""
-        full_path = self._get_full_path(filename)
-        if self.protocol == 's3':
-            self.fs.delete(f"{self.bucket}/{full_path}")
-        else:
-            self.fs.delete(full_path)
+    def delete(self, filename: str) -> bool:
+        """
+        Delete a file from storage
+        Returns True if file was deleted or didn't exist, False if deletion failed
+        """
+        try:
+            full_path = self._get_full_path(filename)
+            if self.protocol == 's3':
+                path = f"{self.bucket}/{full_path}"
+                current_app.logger.debug(f"Attempting to delete S3 file: {path}")
+                if self.fs.exists(path):
+                    current_app.logger.debug(f"File exists, deleting: {path}")
+                    self.fs.delete(path)
+                    deleted = not self.fs.exists(path)
+                    if deleted:
+                        current_app.logger.debug(f"Successfully deleted file: {path}")
+                    else:
+                        current_app.logger.error(f"Failed to delete file: {path}")
+                    return deleted
+                current_app.logger.debug(f"File doesn't exist, skipping delete: {path}")
+                return True  # File didn't exist
+            else:
+                current_app.logger.debug(f"Attempting to delete local file: {full_path}")
+                if self.fs.exists(full_path):
+                    current_app.logger.debug(f"File exists, deleting: {full_path}")
+                    self.fs.delete(full_path)
+                    deleted = not os.path.exists(full_path)
+                    if deleted:
+                        current_app.logger.debug(f"Successfully deleted file: {full_path}")
+                    else:
+                        current_app.logger.error(f"Failed to delete file: {full_path}")
+                    return deleted
+                current_app.logger.debug(f"File doesn't exist, skipping delete: {full_path}")
+                return True  # File didn't exist
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete file {filename}: {str(e)}", exc_info=True)
+            return False
 
     def url_for(self, filename: str) -> str:
         """Get URL for a file"""

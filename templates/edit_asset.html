@@ -4,7 +4,7 @@
 </div>
 
 <div class="form-container">
-    <form method="POST" enctype="multipart/form-data" class="form">
+    <form method="POST" enctype="multipart/form-data" class="form" id="editAssetForm">
         <div class="form-group">
             <label for="title" class="form-label">Title</label>
             <input
@@ -90,7 +90,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="button button-primary">
+            <button type="submit" class="button button-primary" id="submitBtn">
                 <i class="fas fa-save"></i> Update Asset
             </button>
             <a
@@ -159,8 +159,11 @@
             "https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/icons.svg",
     });
 
-    // File input preview handling (keeping your existing code)
     document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("editAssetForm");
+        const loadingOverlay = document.querySelector(".loading-overlay");
+        const loadingText = document.querySelector(".loading-text");
+
         // Featured image preview
         const featuredInput = document.getElementById("featured_image");
         const featuredPreview = document.querySelector(".file-input-preview");
@@ -195,6 +198,51 @@
                     </div>
                 `;
             });
+        });
+
+        // Handle form submission
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            loadingOverlay.style.display = "flex";
+            loadingText.textContent = "Processing...";
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "{{ url_for('edit_asset', id=asset.id) }}", true);
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            window.location.href = response.redirect;
+                        } else {
+                            loadingText.textContent = "Failed: " + response.error;
+                            setTimeout(() => {
+                                loadingOverlay.style.display = "none";
+                            }, 2000);
+                        }
+                    } catch (e) {
+                        // Handle non-JSON response (redirect)
+                        window.location.href = "{{ url_for('asset_detail', id=asset.id) }}";
+                    }
+                } else {
+                    loadingText.textContent = "Update failed! Please try again.";
+                    setTimeout(() => {
+                        loadingOverlay.style.display = "none";
+                    }, 2000);
+                }
+            };
+
+            xhr.onerror = function() {
+                loadingText.textContent = "Network error! Please try again.";
+                setTimeout(() => {
+                    loadingOverlay.style.display = "none";
+                }, 2000);
+            };
+
+            xhr.send(formData);
         });
     });
 </script>
