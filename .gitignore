@@ -86,3 +86,18 @@ venv.bak/
 
 # Data from your local environment
 static/uploads/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDEs and editors
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
