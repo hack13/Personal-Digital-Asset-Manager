@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: docker
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
