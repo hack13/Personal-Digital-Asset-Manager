@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: docker
-    container: node:22-alpine
+    container: docker:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
