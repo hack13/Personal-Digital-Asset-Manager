@@ -37,7 +37,7 @@ def allowed_file(filename, is_featured_image=False):
     if is_featured_image:
         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
     else:
-        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'zip', 'spp', 'unitypackage', 'fbx', 'blend', 'webp'}
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'zip', 'spp', 'unitypackage', 'fbx', 'blend', 'webp', 'tgz', 'tar.gz', '7z'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
