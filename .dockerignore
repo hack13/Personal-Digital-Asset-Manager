@@ -21,3 +21,5 @@ coverage.xml
 venv/
 ENV/
 instance/
+repo-images/
+.forgejo/
