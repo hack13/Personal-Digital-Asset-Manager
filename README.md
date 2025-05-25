@@ -14,19 +14,19 @@ A digital asset management system built with Flask and S3-compatible storage.
 <details>
   <summary>Home Page</summary>
   <p>
-    ![assets view](https://git.hack13.dev/hack13/Personal-Digital-Asset-Manager/raw/branch/main/repo-images/list-of-assets.webp)
+    <img src="https://git.hack13.dev/hack13/Personal-Digital-Asset-Manager/raw/branch/main/repo-images/list-of-assets.webp" />
   </p>
 </details>
 <details>
   <summary>Asset View</summary>
   <p>
-    ![asset view](https://git.hack13.dev/hack13/Personal-Digital-Asset-Manager/raw/branch/main/repo-images/asset-view.webp)
+    <img src="https://git.hack13.dev/hack13/Personal-Digital-Asset-Manager/raw/branch/main/repo-images/asset-view.webp" />
   </p>
 </details>
 <details>
   <summary>Edit Page</summary>
   <p>
-    ![edit view](https://git.hack13.dev/hack13/Personal-Digital-Asset-Manager/raw/branch/main/repo-images/edit-view.webp)
+    <img src="https://git.hack13.dev/hack13/Personal-Digital-Asset-Manager/raw/branch/main/repo-images/edit-view.webp" />
   </p>
 </details>
 
