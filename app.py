@@ -20,11 +20,13 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
+    
+    # Initialize storage backend
+    app.storage = StorageBackend(app.config['STORAGE_URL'])
 
     return app
 
 app = create_app()
-storage = StorageBackend(app.config['STORAGE_URL'])
 
 def generate_unique_filename(original_filename):
     # Get the file extension
@@ -78,7 +80,7 @@ def add_asset():
             )
 
             # Save featured image with unique filename using storage backend
-            storage.save(processed_file, unique_featured_filename)
+            app.storage.save(processed_file, unique_featured_filename)
 
             # Create asset with unique filename
             asset = Asset(
@@ -96,7 +98,7 @@ def add_asset():
                 if file and allowed_file(file.filename):
                     original_filename = secure_filename(file.filename)
                     unique_filename = generate_unique_filename(original_filename)
-                    storage.save(file, unique_filename)
+                    app.storage.save(file, unique_filename)
                     asset_file = AssetFile(
                         filename=unique_filename,
                         original_filename=original_filename,
@@ -113,6 +115,7 @@ def add_asset():
 
         except Exception as e:
             db.session.rollback()
+            app.logger.error(f"Error adding asset: {str(e)}", exc_info=True)
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -147,7 +150,7 @@ def edit_asset(id):
 
                 # Delete old featured image
                 if asset.featured_image:
-                    storage.delete(asset.featured_image)
+                    app.storage.delete(asset.featured_image)
 
                 # Process and convert featured image to WebP
                 processed_image, ext = ImageProcessor.process_featured_image(featured_image)
@@ -164,7 +167,7 @@ def edit_asset(id):
                 )
 
                 # Save the processed image
-                storage.save(processed_file, unique_featured_filename)
+                app.storage.save(processed_file, unique_featured_filename)
                 asset.featured_image = unique_featured_filename
                 asset.original_featured_image = original_featured_filename
 
@@ -174,7 +177,7 @@ def edit_asset(id):
                 if file and allowed_file(file.filename):
                     original_filename = secure_filename(file.filename)
                     unique_filename = generate_unique_filename(original_filename)
-                    storage.save(file, unique_filename)
+                    app.storage.save(file, unique_filename)
                     asset_file = AssetFile(
                         filename=unique_filename,
                         original_filename=original_filename,
@@ -206,12 +209,12 @@ def delete_asset(id):
 
         # Delete featured image
         if asset.featured_image:
-            if not storage.delete(asset.featured_image):
+            if not app.storage.delete(asset.featured_image):
                 deletion_errors.append(f"Failed to delete featured image: {asset.featured_image}")
 
         # Delete additional files
         for file in asset.files:
-            if not storage.delete(file.filename):
+            if not app.storage.delete(file.filename):
                 deletion_errors.append(f"Failed to delete file: {file.filename}")
             db.session.delete(file)
 
@@ -241,7 +244,7 @@ def delete_asset_file(id):
         display_name = asset_file.original_filename or asset_file.filename
 
         # Delete the file using storage backend
-        if not storage.delete(filename):
+        if not app.storage.delete(filename):
             error_msg = f'Failed to delete file {display_name} from storage'
             app.logger.error(error_msg)
             flash(error_msg, 'error')
