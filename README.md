@@ -10,6 +10,26 @@ A digital asset management system built with Flask and S3-compatible storage.
 - License key management
 - Docker container support
 
+## Screenshots
+<details>
+  <summary>Home Page</summary>
+  <p>
+    ![assets view](repo-images/list-of-assets.webp)
+  </p>
+</details>
+<details>
+  <summary>Asset View</summary>
+  <p>
+    ![asset view](repo-images/asset-view.webp)
+  </p>
+</details>
+<details>
+  <summary>Edit Page</summary>
+  <p>
+    ![edit view](repo-images/edit-view.webp)
+  </p>
+</details>
+
 ## Container Registry
 
 This project includes automated container builds using Forgejo CI/CD. The container images are published to the project's container registry.
