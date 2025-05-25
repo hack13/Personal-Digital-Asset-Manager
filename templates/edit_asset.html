@@ -28,7 +28,7 @@
             <label class="form-label">Current Featured Image</label>
             <div class="current-image">
                 <img
-                    src="{{ url_for('static', filename='uploads/' + asset.featured_image) }}"
+                    src="{{ asset.featured_image_url }}"
                     alt="{{ asset.title }}"
                 />
             </div>
@@ -109,7 +109,7 @@
             {% for file in asset.files %}
             <li class="file-item">
                 <a
-                    href="{{ url_for('static', filename='uploads/' + file.filename) }}"
+                    href="{{ file.file_url }}"
                     target="_blank"
                     class="file-link"
                 >
