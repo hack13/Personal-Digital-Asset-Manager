@@ -9,9 +9,6 @@ services:
     ## Database Configuration
     #  - DATABASE_URL=sqlite:///instance/app.db
 
-    ## File Storage
-    #  - STORAGE_URL=file://static/uploads
-
     ## S3 Storage Back-end
     #  - STORAGE_URL=s3://bucketname
     #  - S3_ACCESS_KEY=some-secure-user-key
