@@ -1,0 +1,22 @@
+services:
+  pdam:
+    image: git.hack13.dev/hack13/personal-digital-asset-manager:latest
+    restart: unless-stopped
+    volumes:
+      - ./uploads:/app/static/uploads # Not required for S3 Storage Back-end
+      - ./app.db:/app/instance/app.db
+    environment:
+    ## Database Configuration
+    #  - DATABASE_URL=sqlite:///instance/app.db
+
+    ## File Storage
+    #  - STORAGE_URL=file://static/uploads
+
+    ## S3 Storage Back-end
+    #  - STORAGE_URL=s3://bucketname
+    #  - S3_ACCESS_KEY=some-secure-user-key
+    #  - S3_SECRET_KEY=some-secure-secret-key
+    #  - S3_ENDPOINT_URL=http://localhost:9000  # Optional, for S3-compatible services
+    #  - S3_PUBLIC_URL=http://your-public-url   # Optional, for direct file access
+    ports:
+      - 5000:5000

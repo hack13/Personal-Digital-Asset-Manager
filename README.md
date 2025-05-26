@@ -30,6 +30,12 @@ A digital asset management system built with Flask and S3-compatible storage.
   </p>
 </details>
 
+## Installation
+
+You can use [this docker compose file](docker-compose.yml) to install this project using docker.
+
+Make sure to uncomment your desired storage backend.
+
 ## Container Registry
 
 This project includes automated container builds using Forgejo CI/CD. The container images are published to the project's container registry.
