@@ -109,8 +109,7 @@
             {% for file in asset.files %}
             <li class="file-item">
                 <a
-                    href="{{ file.file_url }}"
-                    target="_blank"
+                    href="{{ url_for('download_file', file_id=file.id) }}"
                     class="file-link"
                 >
                     <i class="fas fa-file"></i>

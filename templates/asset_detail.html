@@ -64,15 +64,14 @@
             </div>
             {% endif %}
 
-            <div class="attached-files content-box">
-                <h2>Attached Files</h2>
+            <div class="files-section">
+                <h2>Files</h2>
                 {% if asset.files %}
                 <ul class="files-list">
                     {% for file in asset.files %}
                     <li class="file-item">
                         <a
-                            href="{{ file.file_url }}"
-                            target="_blank"
+                            href="{{ url_for('download_file', file_id=file.id) }}"
                             class="file-link"
                         >
                             <i class="fas fa-file"></i>

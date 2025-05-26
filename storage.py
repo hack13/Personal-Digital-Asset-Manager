@@ -172,4 +172,19 @@ class StorageBackend:
         full_path = self._get_full_path(filename)
         if self.protocol == 's3':
             return self.fs.exists(f"{self.bucket}/{full_path}")
-        return self.fs.exists(full_path) 
+        return self.fs.exists(full_path)
+
+    def get_file_stream(self, filename: str):
+        """Get a file stream from storage"""
+        try:
+            if self.protocol == 's3':
+                s3_path = f"{self.bucket}/{self._get_full_path(filename)}"
+                self.logger.debug(f"Opening S3 file stream: {s3_path}")
+                return self.fs.open(s3_path, 'rb')
+            else:
+                full_path = self._get_full_path(filename)
+                self.logger.debug(f"Opening local file stream: {full_path}")
+                return open(full_path, 'rb')
+        except Exception as e:
+            self.logger.error(f"Failed to get file stream for {filename}: {str(e)}", exc_info=True)
+            raise 

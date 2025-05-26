@@ -1,6 +1,7 @@
 import os
 import uuid
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+import mimetypes
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, send_file, Response, stream_with_context
 from werkzeug.utils import secure_filename
 from config import Config
 from flask_migrate import Migrate
@@ -262,6 +263,51 @@ def delete_asset_file(id):
         app.logger.error("Failed to delete asset file: %s", str(e))
         flash('Failed to delete file: ' + str(e), 'error')
         return redirect(url_for('asset_detail', id=asset_id))
+
+@app.route('/download/<int:file_id>')
+def download_file(file_id):
+    """Download a file with its original filename"""
+    try:
+        asset_file = AssetFile.query.get_or_404(file_id)
+        filename = asset_file.filename
+        download_name = asset_file.original_filename or filename
+
+        # Guess the mime type
+        mime_type, _ = mimetypes.guess_type(download_name)
+        if mime_type is None:
+            mime_type = 'application/octet-stream'
+
+        app.logger.debug(f"Starting download of {filename} as {download_name} with type {mime_type}")
+
+        try:
+            file_stream = app.storage.get_file_stream(filename)
+            
+            def generate():
+                try:
+                    while True:
+                        chunk = file_stream.read(8192)  # Read in 8KB chunks
+                        if not chunk:
+                            break
+                        yield chunk
+                finally:
+                    file_stream.close()
+
+            response = Response(
+                stream_with_context(generate()),
+                mimetype=mime_type
+            )
+            response.headers['Content-Disposition'] = f'attachment; filename="{download_name}"'
+            return response
+
+        except Exception as e:
+            app.logger.error(f"Error streaming file {filename}: {str(e)}", exc_info=True)
+            flash('Error downloading file. Please try again.', 'error')
+            return redirect(url_for('asset_detail', id=asset_file.asset_id))
+
+    except Exception as e:
+        app.logger.error(f"Error in download_file: {str(e)}", exc_info=True)
+        flash('File not found or error occurred.', 'error')
+        return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5432, debug=True)
